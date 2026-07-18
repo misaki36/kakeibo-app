@@ -14,6 +14,17 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    // このユーザーが持つ支出データ一覧を取得できるようにする
+public function expenses()
+{
+    return $this->hasMany(Expense::class);
+}
+
+// このユーザーが持つ収入データ一覧を取得できるようにする
+public function incomes()
+{
+    return $this->hasMany(Income::class);
+}
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
