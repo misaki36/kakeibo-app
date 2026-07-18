@@ -30,4 +30,4 @@ Homestead.json
 auth.json
 
 # VSCode
-.vscode/
+.vscode/.DS_Store
