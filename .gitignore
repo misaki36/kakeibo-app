@@ -32,3 +32,17 @@ auth.json
 # VSCode
 .vscode/.DS_Store
 database/database.sqlite
+
+# Laravel storage(自動生成されるキャッシュ・ログ類)
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+!storage/framework/cache/.gitignore
+!storage/framework/sessions/.gitignore
+!storage/framework/testing/.gitignore
+!storage/framework/views/.gitignore
+/storage/logs/*
+!storage/logs/.gitignore
