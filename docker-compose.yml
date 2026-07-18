@@ -1,0 +1,66 @@
+# 複数のコンテナ(PHP・MySQL)をまとめて管理する設定ファイル
+# Docker Compose v2以降は version: の記述は不要(書くと警告が出る)
+services:
+
+  # ---- アプリケーション本体(PHP) ----
+  app:
+    # 同じフォルダにあるDockerfileを使ってイメージをビルドする
+    build: .
+    # コンテナに名前をつけて、他のコンテナからもわかりやすくする
+    container_name: kakeibo-app
+    # ローカルのファイルとコンテナ内のファイルを同期させる(コード変更が即反映される)
+    volumes:
+      - .:/var/www/html
+    # dbコンテナが起動してからappコンテナを起動する(起動順の制御)
+    depends_on:
+      - db
+    # コンテナ内の環境変数(タイムゾーンなどをここで設定してもOK)
+    networks:
+      - kakeibo-network
+
+  # ---- Webサーバー(Nginx) ----
+  # PHP-FPMだけではブラウザからのリクエストを直接受けられないため、Nginxを別コンテナで用意する
+  web:
+    image: nginx:alpine
+    container_name: kakeibo-web
+    ports:
+      # ローカルPCの8000番ポートを、コンテナの80番ポートに繋げる
+      # → ブラウザで localhost:8000 にアクセスするとこのコンテナに届く
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      # Nginxの設定ファイルを、後で作るdocker/nginx/default.confから読み込む
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - kakeibo-network
+
+  # ---- データベース(MySQL) ----
+  db:
+    image: mysql:8.0
+    container_name: kakeibo-db
+    environment:
+      # 作成するデータベース名
+      MYSQL_DATABASE: kakeibo_db
+      # rootユーザーのパスワード(開発環境用の簡易パスワード)
+      MYSQL_ROOT_PASSWORD: password
+      # アプリ用ユーザーも作成しておく(rootを直接使わないため)
+      MYSQL_USER: kakeibo_user
+      MYSQL_PASSWORD: password
+    volumes:
+      # DBのデータをコンテナの外(ローカル)に保存し、コンテナを削除してもデータが消えないようにする
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - kakeibo-network
+
+# コンテナ同士が通信するための仮想ネットワーク
+networks:
+  kakeibo-network:
+    driver: bridge
+
+# MySQLのデータを永続化するための保存領域
+volumes:
+  db-data:
