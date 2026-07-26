@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
@@ -9,21 +10,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// クロージャ（無名関数）から、DashboardControllerのindex()メソッドを呼び出す形に変更
+// これにより、月別収支データを計算してビューに渡せるようになる
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    // 支出のCRUD(今週はCreate・Readのみなので、7つ全部ではなく必要な分だけ指定)
+    // 支出のCRUD(Week23でUpdate・Deleteを追加、7ルート全部使うようになった)
     // resource()は index/create/store/show/edit/update/destroy の7ルートを一括生成する
-    // ->only()で、今回使う4つ(一覧・新規作成フォーム・保存・詳細)だけに絞る
-    Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'show']);
-
-    // 収入のCRUD(同様にCreate・Readのみ)
-    Route::resource('incomes', IncomeController::class)->only(['index', 'create', 'store', 'show']);
+    Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    // レシート画像を表示するための専用ルート
+    // 画像ファイルを直接公開URLで配信せず、Policyによる本人確認を経てから画像データを返す
+    Route::get('/expenses/{expense}/receipt-image', [ExpenseController::class, 'receiptImage'])
+        ->name('expenses.receipt-image');
+    // 収入のCRUD(Week23でUpdate・Deleteを追加、7ルート全部使うようになった)
+Route::resource('incomes', IncomeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 });
 
 require __DIR__.'/auth.php';

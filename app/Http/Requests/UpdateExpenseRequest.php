@@ -4,11 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreExpenseRequest extends FormRequest
+class UpdateExpenseRequest extends FormRequest
 {
     /**
      * このリクエストを実行する権限があるかどうか
-     * ログイン済みユーザーなら誰でも支出を登録できるので true にする
+     *
+     * 更新の権限チェックはController側で $this->authorize('update', $expense)
+     * を使ってPolicyに任せているので、ここでは true を返すだけでOK
+     * （trueにしておかないと、そもそもリクエスト自体が403で弾かれてしまう）
      */
     public function authorize(): bool
     {
@@ -16,31 +19,23 @@ class StoreExpenseRequest extends FormRequest
     }
 
     /**
-     * バリデーションルール
+     * バリデーションルール（StoreExpenseRequestとほぼ同じ内容）
      */
     public function rules(): array
     {
         return [
-            // exists:categories,id → 送られてきたcategory_idが、実際にcategoriesテーブルに存在するか確認
-            // nullable → カテゴリ未選択でもOK(DB設計書通り)
             'category_id' => 'nullable|exists:categories,id',
-
-            // 金額は必須、整数、1円以上
             'amount' => 'required|integer|min:1',
-
-            // メモは任意、1000文字まで
             'memo' => 'nullable|string|max:1000',
-
-            // 支出日は必須、正しい日付形式であること
             'date' => 'required|date',
 
             // 支払期日：任意入力、日付形式であること
             'due_date' => 'nullable|date',
 
-            // 重要度：任意入力（未指定ならDBのdefault(2)が使われる）、1〜3の整数のみ許可
+            // 重要度：任意入力、1〜3の整数のみ許可
             'priority' => 'nullable|integer|between:1,3',
 
-            // 支払い済みフラグ：チェックボックスなどでON/OFFを送る想定なのでboolean型
+            // 支払い済みフラグ：チェックボックスのON/OFFを送る想定
             'is_paid' => 'nullable|boolean',
 
             // 最大サイズを5MB(5120KB)に緩和。スマホで撮影したレシート写真は2〜3MB程度になることも多いため

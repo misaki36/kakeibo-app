@@ -25,6 +25,99 @@
                 </a>
             </div>
 
+            {{-- 支払い状況フィルタ --}}
+            <div class="mb-4 flex items-center gap-2">
+                {{-- 「すべて」リンク：is_paidパラメータなしで一覧を表示（絞り込み解除） --}}
+                <a href="{{ route('expenses.index') }}"
+                   class="px-3 py-1 rounded {{ request('is_paid') === null ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    すべて
+                </a>
+                {{-- 「未払いのみ」リンク：is_paid=0 を付けてアクセス --}}
+                <a href="{{ route('expenses.index', ['is_paid' => 0]) }}"
+                   class="px-3 py-1 rounded {{ request('is_paid') === '0' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    未払いのみ
+                </a>
+                {{-- 「支払い済みのみ」リンク：is_paid=1 を付けてアクセス --}}
+                <a href="{{ route('expenses.index', ['is_paid' => 1]) }}"
+                   class="px-3 py-1 rounded {{ request('is_paid') === '1' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    支払い済みのみ
+                </a>
+            </div>
+                {{-- 重要度フィルタ --}}
+            <div class="mb-4 flex items-center gap-2">
+                <span class="text-sm text-gray-600 mr-2">重要度:</span>
+                {{-- 「すべて」：priorityパラメータなしでアクセス --}}
+                <a href="{{ route('expenses.index', request()->except('priority')) }}"
+                   class="px-3 py-1 rounded {{ request('priority') === null ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    すべて
+                </a>
+                {{-- 1〜3をループで生成（コピペミスを防ぐため、for文で3つ分をまとめて作る） --}}
+                @for ($i = 1; $i <= 3; $i++)
+                    <a href="{{ route('expenses.index', request()->except('priority') + ['priority' => $i]) }}"
+                       class="px-3 py-1 rounded {{ request('priority') == $i ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                        {{ $i }}
+                    </a>
+                @endfor
+            </div>
+
+           {{-- カテゴリフィルタ --}}
+            <div class="mb-4 flex items-center gap-2">
+                <span class="text-sm text-gray-600 mr-2">カテゴリ:</span>
+                {{-- 「すべて」：category_idパラメータなしでアクセス --}}
+                <a href="{{ route('expenses.index', request()->except('category_id')) }}"
+                   class="px-3 py-1 rounded {{ request('category_id') === null ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    すべて
+                </a>
+                {{-- $categoriesを1件ずつ繰り返して、カテゴリごとのボタンを生成する --}}
+                @foreach ($categories as $category)
+                    <a href="{{ route('expenses.index', request()->except('category_id') + ['category_id' => $category->id]) }}"
+                       class="px-3 py-1 rounded {{ request('category_id') == $category->id ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700' }}">
+                        {{ $category->name }}
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- キーワード検索フォーム --}}
+            <div class="mb-4">
+                {{-- method="GET"にすることで、検索条件がURLのクエリパラメータとして送られる
+                     （これまでのフィルタボタンと同じ仕組みで、URLで検索状態を表現できる） --}}
+                <form method="GET" action="{{ route('expenses.index') }}" class="flex items-center gap-2">
+                    <input type="text" name="keyword" value="{{ request('keyword') }}"
+                           placeholder="メモを検索..."
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        検索
+                    </button>
+                    {{-- 検索中は「クリア」リンクも表示して、簡単に検索解除できるようにする --}}
+                    @if (request('keyword'))
+                        <a href="{{ route('expenses.index', request()->except('keyword')) }}" class="text-gray-600">
+                            クリア
+                        </a>
+                    @endif
+                </form>
+            </div>
+
+            {{-- 期間フィルタ --}}
+            <div class="mb-4">
+                <form method="GET" action="{{ route('expenses.index') }}" class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600">期間:</label>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}"
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <span class="text-gray-600">〜</span>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}"
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        絞り込む
+                    </button>
+                    {{-- date_fromまたはdate_toのどちらかが指定されていれば「クリア」を表示 --}}
+                    @if (request('date_from') || request('date_to'))
+                        <a href="{{ route('expenses.index', request()->except(['date_from', 'date_to'])) }}" class="text-gray-600">
+                            クリア
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @if ($expenses->isEmpty())
                     {{-- データが1件もない場合の表示 --}}
@@ -37,6 +130,10 @@
                                 <th class="py-2">カテゴリ</th>
                                 <th class="py-2">金額</th>
                                 <th class="py-2">メモ</th>
+                                <th class="py-2">支払期日</th>
+                                <th class="py-2">重要度</th>
+                                <th class="py-2">状態</th>
+                                <th class="py-2">画像</th>
                                 <th class="py-2"></th>
                             </tr>
                         </thead>
@@ -44,7 +141,8 @@
                             {{-- コントローラーで取得した$expensesを1件ずつ繰り返し表示 --}}
                             @foreach ($expenses as $expense)
                                 <tr class="border-b">
-                                    <td class="py-2">{{ $expense->date }}</td>
+                                    {{-- format('Y-m-d')で時刻部分を省いて、日付だけを表示する --}}
+                                    <td class="py-2">{{ $expense->date->format('Y-m-d') }}</td>
                                     {{-- カテゴリが未設定(null)の場合は「未分類」と表示 --}}
                                     <td class="py-2">{{ $expense->category->name ?? '未分類' }}</td>
                                     {{-- number_format()で金額に3桁区切りのカンマをつける --}}
@@ -52,7 +150,42 @@
                                     {{-- Str::limit()でメモが長い場合に省略表示 --}}
                                     <td class="py-2">{{ Str::limit($expense->memo, 20) }}</td>
                                     <td class="py-2">
+                                        {{-- due_dateが設定されていれば日付を表示、なければ「―」を表示 --}}
+                                        {{ $expense->due_date ? $expense->due_date->format('Y-m-d') : '―' }}
+                                    </td>
+                                    <td class="py-2">
+                                        {{-- priorityの数値(1〜3)に応じて、色分けしたラベルを表示 --}}
+                                        {{ $expense->priority }}
+                                    </td>
+                                    <td class="py-2">
+                                        {{-- is_paidがtrueなら「支払い済み」、falseなら「未払い」を表示 --}}
+                                        @if ($expense->is_paid)
+                                            <span class="text-green-600">支払い済み</span>
+                                        @else
+                                            <span class="text-red-600">未払い</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2">
+                                        {{-- receipt_imageが設定されていれば小さいサムネイル画像を表示、なければ「―」 --}}
+                                        @if ($expense->receipt_image)
+    {{-- route('expenses.receipt-image', $expense)：専用ルート経由でPolicyの確認を経てから画像を取得する --}}
+    <img src="{{ route('expenses.receipt-image', $expense) }}" alt="レシート画像"
+         class="w-12 h-12 object-cover rounded border border-gray-200">
+@else
+    ―
+@endif
+                                    </td>
+                                   <td class="py-2">
                                         <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600">詳細</a>
+                                        {{-- mx-2で左右に少し余白を入れて、リンク同士がくっつかないようにする --}}
+                                        <a href="{{ route('expenses.edit', $expense) }}" class="text-blue-600 mx-2">編集</a>
+                                        {{-- 削除は<a>タグではなく<form>を使う必要がある(DELETEメソッドで送るため) --}}
+                                        <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline"
+                                              onsubmit="return confirm('本当に削除しますか？')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600">削除</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
