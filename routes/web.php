@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\FavoriteController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,6 +29,12 @@ Route::middleware('auth')->group(function () {
         ->name('expenses.receipt-image');
     // 収入のCRUD(Week23でUpdate・Deleteを追加、7ルート全部使うようになった)
 Route::resource('incomes', IncomeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    // お気に入りの切り替え（Ajax専用ルート、POSTのみ）
+    Route::post('/expenses/{expense}/favorite', [FavoriteController::class, 'toggleExpense'])
+        ->name('expenses.favorite.toggle');
+    Route::post('/incomes/{income}/favorite', [FavoriteController::class, 'toggleIncome'])
+        ->name('incomes.favorite.toggle');
 });
+
 
 require __DIR__.'/auth.php';

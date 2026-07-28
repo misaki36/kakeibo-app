@@ -70,6 +70,7 @@
                                 <th class="py-2">日付</th>
                                 <th class="py-2">金額</th>
                                 <th class="py-2">メモ</th>
+                                <th class="py-2">★</th>
                                 <th class="py-2"></th>
                             </tr>
                         </thead>
@@ -80,6 +81,27 @@
                                     <td class="py-2">{{ $income->date->format('Y-m-d') }}</td>
                                     <td class="py-2">¥{{ number_format($income->amount) }}</td>
                                     <td class="py-2">{{ Str::limit($income->memo, 20) }}</td>
+                                    <td class="py-2">
+                                        <div x-data="{ favorited: {{ $income->favoritedByUsers->contains(auth()->id()) ? 'true' : 'false' }} }">
+                                            <button
+                                                @click="
+                                                    fetch('{{ route('incomes.favorite.toggle', $income) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                                            'Accept': 'application/json',
+                                                        },
+                                                    })
+                                                    .then(res => res.json())
+                                                    .then(data => { favorited = data.favorited })
+                                                "
+                                                :class="favorited ? 'text-yellow-500' : 'text-gray-300'"
+                                                class="text-xl"
+                                            >
+                                                ★
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td class="py-2">
                                         <a href="{{ route('incomes.show', $income) }}" class="text-indigo-600">詳細</a>
                                         <a href="{{ route('incomes.edit', $income) }}" class="text-blue-600 mx-2">編集</a>

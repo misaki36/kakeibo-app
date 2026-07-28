@@ -134,6 +134,7 @@
                                 <th class="py-2">重要度</th>
                                 <th class="py-2">状態</th>
                                 <th class="py-2">画像</th>
+                                <th class="py-2">★</th>
                                 <th class="py-2"></th>
                             </tr>
                         </thead>
@@ -175,6 +176,33 @@
     ―
 @endif
                                     </td>
+
+                                    <td class="py-2">
+                                        {{-- x-data でこの要素専用のAlpine.jsの状態を定義する
+                                             favorited: 初期状態としてサーバーから渡された値を使う --}}
+                                        <div x-data="{ favorited: {{ $expense->favoritedByUsers->contains(auth()->id()) ? 'true' : 'false' }} }">
+                                            <button
+                                                {{-- @click: クリックされたときに実行する処理 --}}
+                                                @click="
+                                                    fetch('{{ route('expenses.favorite.toggle', $expense) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                                            'Accept': 'application/json',
+                                                        },
+                                                    })
+                                                    .then(res => res.json())
+                                                    .then(data => { favorited = data.favorited })
+                                                "
+                                                {{-- :class で、favoritedの値によって色を切り替える --}}
+                                                :class="favorited ? 'text-yellow-500' : 'text-gray-300'"
+                                                class="text-xl"
+                                            >
+                                                ★
+                                            </button>
+                                        </div>
+                                    </td>
+
                                    <td class="py-2">
                                         <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600">詳細</a>
                                         {{-- mx-2で左右に少し余白を入れて、リンク同士がくっつかないようにする --}}
