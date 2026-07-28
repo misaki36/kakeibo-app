@@ -85,7 +85,11 @@
                     {{-- データが1件もない場合の表示 --}}
                     <p class="text-gray-500">まだ支出が登録されていません。</p>
                 @else
-                    <table class="w-full text-left">
+                {{-- overflow-x-auto：横幅が画面を超えたとき、テーブル部分だけ横スクロールできるようにする --}}
+                    <div class="overflow-x-auto">
+                        {{-- w-fullをやめて、最低幅(min-w)を指定することで、テーブルが画面幅より縮まないようにする --}}
+                       <table class="min-w-max text-left">
+                
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">日付</th>
@@ -158,6 +162,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
 
                     {{-- ページネーションのリンクを表示 --}}
                     <div class="mt-4">
