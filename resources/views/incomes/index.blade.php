@@ -23,6 +23,43 @@
                 </a>
             </div>
 
+            {{-- キーワード検索フォーム --}}
+            <div class="mb-4">
+                <form method="GET" action="{{ route('incomes.index') }}" class="flex items-center gap-2">
+                    <input type="text" name="keyword" value="{{ request('keyword') }}"
+                           placeholder="メモを検索..."
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        検索
+                    </button>
+                    @if (request('keyword'))
+                        <a href="{{ route('incomes.index', request()->except('keyword')) }}" class="text-gray-600">
+                            クリア
+                        </a>
+                    @endif
+                </form>
+            </div>
+
+            {{-- 期間フィルタ --}}
+            <div class="mb-4">
+                <form method="GET" action="{{ route('incomes.index') }}" class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600">期間:</label>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}"
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <span class="text-gray-600">〜</span>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}"
+                           class="border-gray-300 rounded-md shadow-sm">
+                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        絞り込む
+                    </button>
+                    @if (request('date_from') || request('date_to'))
+                        <a href="{{ route('incomes.index', request()->except(['date_from', 'date_to'])) }}" class="text-gray-600">
+                            クリア
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @if ($incomes->isEmpty())
                     <p class="text-gray-500">まだ収入が登録されていません。</p>

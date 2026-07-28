@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Income;
 use App\Http\Requests\StoreIncomeRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Http\Requests\UpdateIncomeRequest;
 
 class IncomeController extends Controller
@@ -12,12 +13,26 @@ class IncomeController extends Controller
     /**
      * 収入一覧を表示
      */
-    public function index()
+    public function index(Request $request)
     {
-        // ログイン中のユーザー自身の収入だけを取得する
-        $incomes = Income::where('user_id', Auth::id())
-            ->latest('date')
-            ->paginate(20);
+        $query = Income::where('user_id', Auth::id());
+
+        // キーワード検索（メモの中身をLIKE検索）
+        if ($request->filled('keyword')) {
+            $query->where('memo', 'like', '%' . $request->keyword . '%');
+        }
+
+        // 期間フィルタ（開始日）
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        // 期間フィルタ（終了日）
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        $incomes = $query->latest('date')->paginate(20)->withQueryString();
 
         return view('incomes.index', compact('incomes'));
     }
