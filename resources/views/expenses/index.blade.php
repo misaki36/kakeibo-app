@@ -77,46 +77,8 @@
                 @endforeach
             </div>
 
-            {{-- キーワード検索フォーム --}}
-            <div class="mb-4">
-                {{-- method="GET"にすることで、検索条件がURLのクエリパラメータとして送られる
-                     （これまでのフィルタボタンと同じ仕組みで、URLで検索状態を表現できる） --}}
-                <form method="GET" action="{{ route('expenses.index') }}" class="flex items-center gap-2">
-                    <input type="text" name="keyword" value="{{ request('keyword') }}"
-                           placeholder="メモを検索..."
-                           class="border-gray-300 rounded-md shadow-sm">
-                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        検索
-                    </button>
-                    {{-- 検索中は「クリア」リンクも表示して、簡単に検索解除できるようにする --}}
-                    @if (request('keyword'))
-                        <a href="{{ route('expenses.index', request()->except('keyword')) }}" class="text-gray-600">
-                            クリア
-                        </a>
-                    @endif
-                </form>
-            </div>
-
-            {{-- 期間フィルタ --}}
-            <div class="mb-4">
-                <form method="GET" action="{{ route('expenses.index') }}" class="flex items-center gap-2">
-                    <label class="text-sm text-gray-600">期間:</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') }}"
-                           class="border-gray-300 rounded-md shadow-sm">
-                    <span class="text-gray-600">〜</span>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}"
-                           class="border-gray-300 rounded-md shadow-sm">
-                    <button type="submit" class="px-4 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        絞り込む
-                    </button>
-                    {{-- date_fromまたはdate_toのどちらかが指定されていれば「クリア」を表示 --}}
-                    @if (request('date_from') || request('date_to'))
-                        <a href="{{ route('expenses.index', request()->except(['date_from', 'date_to'])) }}" class="text-gray-600">
-                            クリア
-                        </a>
-                    @endif
-                </form>
-            </div>
+            <x-search-form route="expenses.index" />
+            <x-date-range-filter route="expenses.index" />
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @if ($expenses->isEmpty())
@@ -178,31 +140,8 @@
                                     </td>
 
                                     <td class="py-2">
-                                        {{-- x-data でこの要素専用のAlpine.jsの状態を定義する
-                                             favorited: 初期状態としてサーバーから渡された値を使う --}}
-                                        <div x-data="{ favorited: {{ $expense->favoritedByUsers->contains(auth()->id()) ? 'true' : 'false' }} }">
-                                            <button
-                                                {{-- @click: クリックされたときに実行する処理 --}}
-                                                @click="
-                                                    fetch('{{ route('expenses.favorite.toggle', $expense) }}', {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                                            'Accept': 'application/json',
-                                                        },
-                                                    })
-                                                    .then(res => res.json())
-                                                    .then(data => { favorited = data.favorited })
-                                                "
-                                                {{-- :class で、favoritedの値によって色を切り替える --}}
-                                                :class="favorited ? 'text-yellow-500' : 'text-gray-300'"
-                                                class="text-xl"
-                                            >
-                                                ★
-                                            </button>
-                                        </div>
+                                        <x-favorite-button :model="$expense" toggleRoute="expenses.favorite.toggle" />
                                     </td>
-
                                    <td class="py-2">
                                         <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600">詳細</a>
                                         {{-- mx-2で左右に少し余白を入れて、リンク同士がくっつかないようにする --}}
