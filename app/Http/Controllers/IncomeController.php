@@ -15,7 +15,8 @@ class IncomeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Income::where('user_id', Auth::id());
+        // お気に入り情報をまとめて取得し、N+1問題を防ぐ
+        $query = Income::where('user_id', Auth::id())->with('favoritedByUsers');
 
         // キーワード検索（メモの中身をLIKE検索）
         if ($request->filled('keyword')) {
