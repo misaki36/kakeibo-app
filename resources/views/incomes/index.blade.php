@@ -32,7 +32,10 @@
                 @if ($incomes->isEmpty())
                     <p class="text-gray-500">まだ収入が登録されていません。</p>
                 @else
-                    <table class="w-full text-left">
+                {{-- overflow-x-auto：横幅が画面を超えたとき、テーブル部分だけ横スクロールできるようにする --}}
+                <div class="overflow-x-auto">
+                    <table class="min-w-max text-left">
+                
                         <thead>
                             <tr class="border-b">
                                 <th class="py-2">日付</th>
@@ -49,6 +52,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>    
 
                     <div class="mt-4">
                         {{ $incomes->links() }}
