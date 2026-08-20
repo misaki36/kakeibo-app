@@ -52,7 +52,11 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN echo "upload_max_filesize = 10M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 10M" >> /usr/local/etc/php/conf.d/uploads.ini
 
-# コンテナが起動したときに、Laravel標準の簡易サーバーを起動する
-# 0.0.0.0で待機することで、コンテナの外からのアクセスを受け付けられるようにする
-# $PORTはRenderが自動的に設定してくれる環境変数(ローカルではdocker-compose.ymlの設定が優先される)
+# 起動スクリプトをコンテナ内にコピーし、実行権限を付与する
+# ローカルではdocker-compose.ymlのcommand設定が優先されるため、このCMDはRender等の本番環境でのみ使われる
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# コンテナが起動したときにPHP-FPM(PHPの実行プロセス)を起動する
+# ローカルではこちらが使われる(docker-compose.ymlで上書きされない場合)
 CMD ["php-fpm"]
