@@ -38,8 +38,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Render等の本番環境では、このCOPYがないとアプリの中身が空になってしまうため必須
 COPY . .
 
-# デバッグ用: storageフォルダの中身がちゃんとコンテナに入っているか確認するための一時的なコマンド
-RUN ls -la storage/framework/
 
 # Composerで依存パッケージ(Laravel本体や各種ライブラリ)をインストールする
 # --no-dev: 本番環境では開発用のツールは不要なので除外する
