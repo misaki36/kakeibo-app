@@ -48,6 +48,22 @@ docker compose exec app php artisan db:seed --class=CategorySeeder
 
 ブラウザで `http://localhost:8000` にアクセス。
 
+### 補足：CSS/JSのビルドについて
+
+`npm run build`で生成される`public/build`配下のファイルは、通常`.gitignore`で除外される。
+ただし本番環境（Render）ではNode.jsを使ったビルド工程を用意していないため、
+ローカルでビルドした成果物を`-f`オプションで明示的にGit管理に含めている。
+
+そのため、CSS/JSに関わる変更（Tailwind CSSの新しいクラスの追加など）を行った場合は、
+以下の手順で本番用ファイルも更新する必要がある。
+
+```bash
+npm run build
+git add public/build/ -f
+git commit -m "..."
+git push
+```
+
 ## ドキュメント
 - [要件定義書](docs/requirements.md)
 - [DB設計書](docs/db_design.md)
@@ -85,7 +101,7 @@ Week21で作成した企画・設計書をもとに、総合プロジェクト�
   - Mass Assignment対策として$fillableを明示
 - Git/GitHub運用
   - week22/setup-auth-crud ブランチで作業し、随時コミット・プッシュ
-  
+
 ### 今後追加予定
 - 画像アップロード機能（レシート）
 - Update・Delete機能
