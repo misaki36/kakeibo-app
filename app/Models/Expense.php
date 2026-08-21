@@ -46,4 +46,12 @@ class Expense extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    // この支出をお気に入りしているユーザー一覧（多対多、中間テーブルはfavorites）
+    // morphToMany()：多態的な多対多リレーション。favoritesテーブル経由でUserと繋がる
+    public function favoritedByUsers()
+    {
+        return $this->morphToMany(User::class, 'favoritable', 'favorites')
+            ->withTimestamps();
+    }
 }

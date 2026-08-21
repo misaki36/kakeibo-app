@@ -40,4 +40,19 @@ public function incomes()
             'password' => 'hashed',
         ];
     }
+
+    // このユーザーがお気に入りしている支出データ一覧
+// morphedByMany()：Expense側のmorphToMany()と対になる、逆方向のリレーション定義
+public function favoriteExpenses()
+{
+    return $this->morphedByMany(Expense::class, 'favoritable', 'favorites')
+        ->withTimestamps();
+}
+
+// このユーザーがお気に入りしている収入データ一覧
+public function favoriteIncomes()
+{
+    return $this->morphedByMany(Income::class, 'favoritable', 'favorites')
+        ->withTimestamps();
+}
 }

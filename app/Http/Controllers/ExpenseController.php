@@ -17,9 +17,8 @@ class ExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        // クエリビルダを変数に入れておき、条件を後から追加できるようにする
-        // （$queryに条件をどんどん追加していき、最後にpaginate()で実行するイメージ）
-        $query = Expense::where('user_id', Auth::id())->with('category');
+        // with()に複数の関連を配列で渡すことで、カテゴリとお気に入り情報を両方まとめて取得する
+        $query = Expense::where('user_id', Auth::id())->with(['category', 'favoritedByUsers']);
 
         // 支払い状況フィルタ
         // filled('is_paid') → URLに?is_paid=... のパラメータが「空でなく」存在するか確認

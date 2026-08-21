@@ -29,4 +29,11 @@ class Income extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // この収入をお気に入りしているユーザー一覧（多対多、中間テーブルはfavorites）
+    public function favoritedByUsers()
+    {
+        return $this->morphToMany(User::class, 'favoritable', 'favorites')
+            ->withTimestamps();
+    }
 }
