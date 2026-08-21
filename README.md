@@ -276,6 +276,15 @@ Week23本編（PR #14）に対して講師から3回にわたる添削があり�
    - RenderはHTTPS経由でアクセスされるが、Laravel側は内部的にHTTPと誤認識し、CSSやJSをHTTPで読み込もうとしてブラウザにブロックされる問題が発生
    - 環境変数`APP_URL`をHTTPSのURLで明示的に設定することで解決
 
+7. **Mixed Contentエラーの根本対応（`APP_URL`だけでは不十分だった）**
+   - `APP_URL`をHTTPSで設定した後も、ログイン画面など一部の画面でMixed Contentエラーが再発
+   - Renderのようなリバースプロキシ環境では、外部との通信はHTTPSでも、内部でコンテナへ転送される際にはHTTPになっており、Laravelがそれを見て「今の通信はHTTPだ」と誤判定してしまうことが原因と判明
+   - `AppServiceProvider`の`boot()`メソッドに`URL::forceScheme('https')`を追加し、本番環境では常にHTTPSのURLを生成するよう強制することで解決
+
+8. **カテゴリの初期データが本番環境に投入されていない**
+   - マイグレーション（テーブル作成）は自動化していたが、カテゴリの初期データ（食費・日用品費など）を投入するSeederは本番環境で一度も実行されておらず、支出・収入登録時にカテゴリが選択できない状態になっていた
+   - `CategorySeeder`は`firstOrCreate`を使っており、何度実行しても重複登録されない安全な作りだったため、`docker-entrypoint.sh`に`php artisan db:seed --class=CategorySeeder --force`を追加し、起動のたびに自動実行されるよう変更
+
 ### README・成果物共有（Day6-7）
 - READMEにWeek24の作業内容を追記し、最終仕上げを実施
 - 公開URL・GitHubリポジトリ・動作確認済み機能一覧・6ヶ月間の振り返りを講師に共有
