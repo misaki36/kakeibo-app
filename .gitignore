@@ -36,6 +36,7 @@ database/database.sqlite
 # Laravel storage(自動生成されるキャッシュ・ログ類)
 /storage/*.key
 /storage/app/public
+/storage/app/private
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/testing/*

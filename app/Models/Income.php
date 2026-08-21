@@ -16,6 +16,13 @@ class Income extends Model
         'memo',
         'date',
     ];
+   /**
+     * 属性の型変換設定
+     */
+    protected $casts = [
+        'date' => 'date',
+    ];
+
 
     // この収入データは、どのユーザーのものか（多対1の関係）
     public function user()

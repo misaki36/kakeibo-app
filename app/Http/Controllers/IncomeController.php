@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Income;
 use App\Http\Requests\StoreIncomeRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\UpdateIncomeRequest;
 
 class IncomeController extends Controller
 {
@@ -55,4 +56,44 @@ class IncomeController extends Controller
 
         return view('incomes.show', compact('income'));
     }
+
+/**
+     * 編集フォームを表示
+     */
+    public function edit(Income $income)
+    {
+        // Policyでチェック：本人の収入データでなければ403エラー
+        $this->authorize('update', $income);
+
+        return view('incomes.edit', compact('income'));
+    }
+
+    /**
+     * 収入データを更新
+     */
+    public function update(UpdateIncomeRequest $request, Income $income)
+    {
+        $this->authorize('update', $income);
+
+        $data = $request->validated();
+
+        $income->update($data);
+
+        return redirect()->route('incomes.show', $income)
+            ->with('success', '収入を更新しました！');
+    }
+
+    /**
+     * 収入データを削除
+     */
+    public function destroy(Income $income)
+    {
+        $this->authorize('delete', $income);
+
+        $income->delete();
+
+        return redirect()->route('incomes.index')
+            ->with('success', '収入を削除しました');
+    }
+
 }
